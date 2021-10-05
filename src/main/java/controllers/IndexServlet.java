@@ -27,9 +27,25 @@ public class IndexServlet extends HttpServlet {
         // TODO Auto-generated method stub
         EntityManager em = DBUtil.createEntityManager();
 
-        List<Task>tasks =em.createNamedQuery("getAllTasks",Task.class).getResultList();
+        //開くページ数を取得【デフォルトは１ページ目）
+        int page=1;
+        try {
+            page =Integer.parseInt(request.getParameter("page"));
+        } catch(NumberFormatException e) {}
+        //最大件数と開始位置を指定してメッセージを取得
+        List<Task>tasks =em.createNamedQuery("getAllTasks",Task.class)
+                .setFirstResult(15*(page-1))
+                .setMaxResults(15)
+                .getResultList();
+        // 全件数を取得
+        long tasks_count=(long)em.createNamedQuery("getTasksCount",Long.class)
+                .getSingleResult();
         //response.getWriter().append(Integer.valueOf(tasks.size()).toString());
         em.close();
+
+        request.setAttribute("tasks", tasks);
+        request.setAttribute("tasks_count", tasks_count); //全件数
+        request.setAttribute("page",page); //ページ数
 
         request.setAttribute("tasks", tasks);
         // フラッシュメッセージがセッションスコープにセットされていたら
